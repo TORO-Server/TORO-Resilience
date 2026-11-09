@@ -147,9 +147,19 @@ class Engine:
                 continue
             if abs(state.origin_epoch - origin) > self.config.corroboration_window_s:
                 continue
-            # Tier 2: observed intensity confirms a severe event.
-            if (info.max_scale is not None
-                    and info.max_scale >= self.config.observed_stop_scale
+            # Tier 2: observed intensity confirms a severe event. Prefer
+            # the observed scale in the host's own area; fall back to the
+            # national maximum only when the report carries no area data.
+            observed = None
+            if info.areas:
+                for name in self.config.host_area_names:
+                    if name in info.areas:
+                        observed = info.areas[name]
+                        break
+            else:
+                observed = info.max_scale
+            if (observed is not None
+                    and observed >= self.config.observed_stop_scale
                     and not state.stop_recommended):
                 state.stop_recommended = True
                 self.actions.stop_recommended(state.key, info)

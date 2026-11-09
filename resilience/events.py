@@ -101,4 +101,5 @@ class QuakeInfo:
     max_scale: int | None = None
     hypocenter_name: str = ""
     magnitude: float | None = None
+    areas: dict = field(default_factory=dict)  # area name -> observed scale value
     received_monotonic: float = 0.0

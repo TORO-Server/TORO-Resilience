@@ -42,6 +42,14 @@ class Config:
     discord_webhook_env: str = "RESILIENCE_DISCORD_WEBHOOK"
     notify_discord: bool = True
 
+    # Local action commands (argv arrays, executed without a shell) take
+    # precedence over RCON when non-empty. This covers deployments where
+    # the server runs in a container reachable via e.g. docker exec.
+    local_commands_on_save: list = field(default_factory=list)
+    local_commands_on_login_stop: list = field(default_factory=list)
+    local_commands_on_login_resume: list = field(default_factory=list)
+    local_commands_on_stop: list = field(default_factory=list)
+
     rcon_enabled: bool = False
     rcon_host: str = "127.0.0.1"
     rcon_port: int = 25575

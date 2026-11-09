@@ -116,12 +116,19 @@ def _parse_p2p(d: dict):
         eq = d.get("earthquake") or {}
         hypo = eq.get("hypocenter") or {}
         max_scale = eq.get("maxScale")
+        areas = {}
+        for a in d.get("areas") or []:
+            name = a.get("name")
+            scale = a.get("maxScale")
+            if name and scale is not None:
+                areas[name] = int(scale)
         return QuakeInfo(
             source="p2p",
             event_key_time=str(eq.get("time", "")),
             max_scale=int(max_scale) if max_scale is not None else None,
             hypocenter_name=str(hypo.get("name", "")),
             magnitude=_f(hypo.get("magnitude")),
+            areas=areas,
         )
     return None
 

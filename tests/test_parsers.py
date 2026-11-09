@@ -72,10 +72,13 @@ class P2pParserTest(unittest.TestCase):
     def test_quake_info(self):
         payload = {"code": 551,
                    "earthquake": {"time": "2026/11/08 01:04:35", "maxScale": 55,
-                                  "hypocenter": {"name": "愛知県東部", "magnitude": 5.5}}}
+                                  "hypocenter": {"name": "愛知県東部", "magnitude": 5.5}},
+                   "areas": [{"name": "愛知県西部", "maxScale": 45},
+                             {"name": "愛知県東部", "maxScale": 55}]}
         ev = parse_message("p2p", json.dumps(payload))
         self.assertIsInstance(ev, QuakeInfo)
         self.assertEqual(ev.max_scale, 55)
+        self.assertEqual(ev.areas, {"愛知県西部": 45, "愛知県東部": 55})
 
     def test_housekeeping_ignored(self):
         self.assertIsNone(parse_message("p2p", '{"code":555,"areas":[]}'))

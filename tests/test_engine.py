@@ -121,6 +121,20 @@ class EngineTest(unittest.TestCase):
         engine.handle_report(parse_message("wolfx", cancel), now=500.0)
         self.assertNotIn("login_resume", actions.calls)
 
+    def test_tier2_uses_host_area_not_national_max(self):
+        engine, actions = make_engine()
+        engine.handle_report(parse_message("wolfx", wolfx_payload()), now=100.0)
+        det = parse_message("p2p", '{"code":554,"time":"2026/10/16 12:40:05","type":"Full"}')
+        engine.handle_report(det, now=105.0)
+        # National max 6弱, but the host area observed only 4: no stop.
+        quake = parse_message("p2p", json.dumps({
+            "code": 551, "earthquake": {"time": "2026/10/16 12:38:10", "maxScale": 60,
+                                        "hypocenter": {"name": "千島列島", "magnitude": 9.9}},
+            "areas": [{"name": "愛知県西部", "maxScale": 40},
+                      {"name": "北海道東部", "maxScale": 60}]}))
+        engine.handle_quake(quake, now=400.0)
+        self.assertNotIn("stop_recommended", actions.calls)
+
     def test_training_ignored(self):
         engine, actions = make_engine()
         ev = parse_message("wolfx", wolfx_payload(isTraining=True))

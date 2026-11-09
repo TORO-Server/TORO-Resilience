@@ -92,18 +92,21 @@ class ActionHub:
 
     def save_start(self, key, state) -> None:
         self.log.record({"type": "tier1_save_start", "event": key})
-        self._run_rcon(self.config.commands_on_save, key, "save")
+        self._run_actions(self.config.local_commands_on_save,
+                          self.config.commands_on_save, key, "save")
 
     def login_stop(self, key, state) -> None:
         self.log.record({"type": "tier1_login_stop", "event": key,
                          "corroborated": True})
         self.notifier.send("予測震度が閾値以上です。新規ログインを停止しました。")
-        self._run_rcon(self.config.commands_on_login_stop, key, "login_stop")
+        self._run_actions(self.config.local_commands_on_login_stop,
+                          self.config.commands_on_login_stop, key, "login_stop")
 
     def login_resume(self, key, state) -> None:
         self.log.record({"type": "tier1_login_resume", "event": key})
         self.notifier.send("取消に伴い、新規ログイン停止を解除しました。")
-        self._run_rcon(self.config.commands_on_login_resume, key, "login_resume")
+        self._run_actions(self.config.local_commands_on_login_resume,
+                          self.config.commands_on_login_resume, key, "login_resume")
 
     def stop_recommended(self, key, info) -> None:
         self.log.record({"type": "tier2_stop_recommended", "event": key,
@@ -122,9 +125,35 @@ class ActionHub:
         except OSError as e:
             self.log.record({"type": "suppress_flag_failed", "error": str(e)})
         if self.config.allow_server_stop:
-            self._run_rcon(self.config.commands_on_stop, key, "stop")
+            self._run_actions(self.config.local_commands_on_stop,
+                              self.config.commands_on_stop, key, "stop")
 
     # -- internals ---------------------------------------------------------
+
+    def _run_actions(self, local_commands, rcon_commands, key, label: str) -> None:
+        if local_commands:
+            self._run_local(local_commands, key, label)
+        else:
+            self._run_rcon(rcon_commands, key, label)
+
+    def _run_local(self, commands, key, label: str) -> None:
+        import subprocess
+        for argv in commands:
+            if not isinstance(argv, (list, tuple)) or not argv:
+                self.log.record({"type": "local_command_invalid", "event": key,
+                                 "action": label, "command": argv})
+                continue
+            try:
+                proc = subprocess.run([str(a) for a in argv],
+                                      capture_output=True, text=True, timeout=30)
+                self.log.record({"type": "local_command", "event": key,
+                                 "action": label, "command": list(argv),
+                                 "returncode": proc.returncode,
+                                 "stdout": (proc.stdout or "")[:200]})
+            except Exception as e:
+                self.log.record({"type": "local_command_failed", "event": key,
+                                 "action": label, "command": list(argv),
+                                 "error": f"{type(e).__name__}: {e}"})
 
     def _run_rcon(self, commands, key, label: str) -> None:
         if not commands:
