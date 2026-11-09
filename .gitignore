@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+config.json
+incidents.jsonl*
+heartbeat.json
+*.suppress-restart
+.venv/

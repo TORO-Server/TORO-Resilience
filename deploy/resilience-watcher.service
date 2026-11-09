@@ -1,0 +1,15 @@
+[Unit]
+Description=TORO-Resilience watcher
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/toro-resilience
+ExecStart=/usr/bin/python3 -m resilience --config /etc/toro-resilience/config.json watcher
+EnvironmentFile=/etc/toro-resilience/resilience.env
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
