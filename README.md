@@ -21,7 +21,7 @@ python3 -m resilience --config config.json watcher
 
 設定は JSON ファイルで与える（`config.example.json` 参照）。秘密情報はファイルに書かず、環境変数名で参照する。ホストの所在地（緯度経度・対象地域名）は設定側で与えるものであり、本リポジトリには含まれない。
 
-検証用に、記録済みの経路ペイロードをエンジンへ流すリプレイがある。
+検証用に、記録済みの経路の受信データをエンジンへ流すリプレイがある。
 
 ```sh
 python3 -m resilience --config config.json replay --source p2p payload.json
@@ -34,3 +34,5 @@ python3 -m unittest discover -s tests
 ```
 
 設計判断と無料経路の制約は `docs/DESIGN.md`、運用手順は `docs/RUNBOOK.md` を参照。
+
+文章の書き方は [WRITING-STYLE.md](https://github.com/TORO-Server/TORO-Website/blob/main/docs/WRITING-STYLE.md) に従います。
